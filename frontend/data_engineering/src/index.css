@@ -2,8 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply m-0 min-h-screen bg-slate-100 text-slate-900 antialiased;
-  }
+:root {
+  --color-bg-light: rgb(245 247 250);
+
+  --color-bg-surface-primary-default-light: rgb(255 255 255);
+  --color-bg-surface-primary-hover-light: rgb(249 250 251);
+  --color-bg-fill-accent-default-light: rgb(59 130 246);
+  --color-bg-fill-primary-hover-light: rgb(236 238 241);
+  --color-border-primary-default-light: rgb(229 231 235);
+  --color-border-tertiary-default-light: rgb(209 213 219);
+  --color-border-tertiary-hover-light: rgb(156 163 175);
+  --color-icon-accent-default-light: rgb(59 130 246);
+  --color-text-accent-active-light: rgb(255 255 255);
+  --color-text-primary-default-light: rgb(55 65 81);
+  --color-text-secondary-default-light: rgb(107 114 128);
 }
