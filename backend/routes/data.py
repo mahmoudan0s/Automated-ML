@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends,UploadFile, status
+from fastapi import APIRouter, Depends, UploadFile, status, Form
 from fastapi.responses import JSONResponse
 import os
 from helpers.confg import get_settings, Settings
@@ -7,6 +7,7 @@ import aiofiles
 from models import ResponseSignal
 import logging
 
+from models.enums import ProblemType, SUPERVISED_PROBLEMS
 logger = logging.getLogger('uvicorn.error')
 
 data_router = APIRouter(
@@ -15,11 +16,27 @@ data_router = APIRouter(
 )
 
 @data_router.post("/upload/{project_id}")
-async def upload_data(project_id : str ,file : UploadFile ,
-                       app_settings: Settings = Depends(get_settings)):
+async def upload_data(
+    project_id: str,
+    file: UploadFile,
+    problem_type: ProblemType = Form(...),
+    target_column: str | None = Form(None),
+    app_settings: Settings = Depends(get_settings),
+):
     
-    #validate the uploaded file properties
+    # validate the uploaded file properties
     data_controller = DataController()
+
+    if problem_type in SUPERVISED_PROBLEMS and not target_column:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "signal": "target_column is required for classification and regression tasks",
+            },
+        )
+ 
+    if problem_type == ProblemType.clustering:
+        target_column = None  # Ensure target_column is None for clustering problems
 
     is_valid,result_signal= data_controller.validate_upladed_file(file=file)
 
@@ -49,9 +66,12 @@ async def upload_data(project_id : str ,file : UploadFile ,
             }
         )
     
+    
     return JSONResponse(
         content={
             "signal": ResponseSignal.FILE_UPLOAD_SUCCESS.value,
             "file_path": file_path
+            ,"problem_type": problem_type.value,
+            "target_column": target_column,
         }
     )
