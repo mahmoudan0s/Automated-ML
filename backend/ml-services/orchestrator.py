@@ -7,6 +7,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 
+from models.classification import train_classification
+from models.clustering import train_clustering
 from models.regression import train_regression
 from preprocessing.preprocessing import (
     encode_target_labels,
@@ -21,7 +23,7 @@ def preprocess(
     df: pd.DataFrame,
     target: Optional[str],
     task: str,
-) -> Tuple[Any, Any, Dict[str, Any]]:
+) -> Tuple[Any, Any, Pipeline]:
     supervised_tasks = {"classification", "regression"}
     if task in supervised_tasks:
         if not target or target not in df.columns:
@@ -47,16 +49,14 @@ def preprocess(
     if len(X) == 0:
         raise ValueError("All rows were dropped during preprocessing. Adjust missing-value thresholds.")
 
-    artifacts: Dict[str, Any] = {}
     if task == "classification" and y is not None:
-        y, label_encoder = encode_target_labels(y)
-        artifacts["label_encoder"] = label_encoder
+        y, _label_encoder = encode_target_labels(y)
 
         if is_target_imbalanced(y):
             X_resampled, y_resampled = random_oversample(X.to_numpy(), y.to_numpy())
-            return X_resampled, y_resampled, artifacts
+            return X_resampled, y_resampled, preprocessor
 
-    return X, y, {"preprocessor": preprocessor, **artifacts}
+    return X, y, preprocessor
 
 
 def run_pipeline(df, task, target=None):
@@ -78,6 +78,30 @@ def run_pipeline(df, task, target=None):
             "model_name": result["best_model_name"],
             "metrics": result["best_metrics"],
             "all_metrics": result["metrics"],
+            "all_models": list(result["metrics"].keys()),
+            "preprocessor": preprocessor,
+        }
+
+    if task == "classification":
+        result = train_classification(X_train, y_train, X_test, y_test)
+        return {
+            "model": result["best_model"],
+            "model_name": result["best_model_name"],
+            "metrics": result["best_metrics"],
+            "all_metrics": result["metrics"],
+            "all_models": list(result["metrics"].keys()),
+            "preprocessor": preprocessor,
+        }
+
+    if task == "clustering":
+        result = train_clustering(X)
+        return {
+            "model": result["best_model"],
+            "model_name": result["best_model_name"],
+            "metrics": result["best_metrics"],
+            "all_metrics": result["metrics"],
+            "all_models": list(result["metrics"].keys()),
+            "cluster_definitions": result["cluster_definitions"],
             "preprocessor": preprocessor,
         }
 

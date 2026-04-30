@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
@@ -12,6 +12,10 @@ def train_regression(X_train, y_train, X_test, y_test) -> Dict[str, Any]:
         "linear": LinearRegression(),
         "random_forest": RandomForestRegressor(n_estimators=100, random_state=42),
     }
+
+    ridge_alphas = [0.01, 0.1, 1.0, 10.0, 100.0]
+    for alpha in ridge_alphas:
+        regressor[f"ridge_alpha_{alpha}"] = Ridge(alpha=alpha, random_state=42)
 
     best_name = None
     best_model = None

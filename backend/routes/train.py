@@ -43,10 +43,15 @@ async def train_model(
 	df = TrainController().load_training_dataframe(file_path)
 	result = run_pipeline(df, task=problem_type.value, target=target_column)
 
-	return JSONResponse(
-		content={
-			"model_name": result.get("model_name"),
-			"metrics": result.get("metrics"),
-			"all_metrics": result.get("all_metrics"),
-		},
-	)
+	response_content = {
+		"model_name": result.get("model_name"),
+		"metrics": result.get("metrics"),
+		"all_metrics": result.get("all_metrics"),
+		"all_models": result.get("all_models"),
+	}
+
+	cluster_definitions = result.get("cluster_definitions")
+	if cluster_definitions is not None:
+		response_content["cluster_definitions"] = cluster_definitions
+
+	return JSONResponse(content=response_content)
