@@ -6,8 +6,7 @@ from controllers import DataController,ProjectController
 import aiofiles
 from models import ResponseSignal
 import logging
-
-from models.enums import ProblemType, SUPERVISED_PROBLEMS
+from models import ProblemType, SUPERVISED_PROBLEMS
 logger = logging.getLogger('uvicorn.error')
 
 data_router = APIRouter(

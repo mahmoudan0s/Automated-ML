@@ -4,6 +4,7 @@ from .BaseController import BaseController
 from .ProjectController import ProjectController
 from fastapi import UploadFile
 from models import ResponseSignal
+import pandas as pd
 
 class DataController(BaseController):
 
@@ -52,3 +53,15 @@ class DataController(BaseController):
         cleaned_filename = re.sub(r'[^a-zA-Z0-9_.]', '', original_filename.strip())
         cleaned_filename = cleaned_filename.replace(" ", "_")  # Replace spaces with underscores
         return cleaned_filename
+
+    def load_dataframe(self, file_path: str) -> pd.DataFrame:
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File does not exist: {file_path}")
+
+        _, ext = os.path.splitext(file_path.lower())
+        if ext == ".csv":
+            return pd.read_csv(file_path)
+        if ext in {".xls", ".xlsx"}:
+            return pd.read_excel(file_path)
+
+        raise ValueError("Unsupported file format. Use .csv, .xls, or .xlsx")

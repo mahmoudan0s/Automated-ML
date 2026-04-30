@@ -1,55 +1,46 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Optional
-
-import pandas as pd
+from typing import Any, Dict
 
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.svm import SVR
-
-from ..pipeline.full_pipeline import ModelPipelineArtifacts, fit_pipeline_with_estimator
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
-REGRESSION_MODELS = {"linear_regression", "random_forest_regressor", "svr"}
+def train_regression(X_train, y_train, X_test, y_test) -> Dict[str, Any]:
+    regressor = {
+        "linear": LinearRegression(),
+        "random_forest": RandomForestRegressor(n_estimators=100, random_state=42),
+    }
 
+    best_name = None
+    best_model = None
+    best_r2 = float("-inf")
+    metrics: Dict[str, Dict[str, float]] = {}
 
-def get_regression_estimator(model_name: str, random_state: int = 42):
-    name = model_name.lower().strip()
+    for name, model in regressor.items():
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        mae = mean_absolute_error(y_test, y_pred)
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
 
-    if name == "linear_regression":
-        return LinearRegression()
-    if name == "random_forest_regressor":
-        return RandomForestRegressor(n_estimators=300, random_state=random_state)
-    if name == "svr":
-        return SVR()
+        metrics[name] = {
+            "accuracy": r2,
+            "mae": mae,
+            "mse": mse,
+            "r2": r2,
+        }
 
-    raise ValueError("Unsupported regression model_name. Use: linear_regression, random_forest_regressor, svr")
+        if r2 > best_r2:
+            best_r2 = r2
+            best_name = name
+            best_model = model
 
-
-def run_regression_pipeline(
-    df: pd.DataFrame,
-    target_column: str,
-    model_name: str,
-    ordered_categorical_features: Optional[Iterable[str]] = None,
-    category_orders: Optional[Dict[str, List[Any]]] = None,
-    correlation_threshold: float = 0.6,
-    random_state: int = 42,
-) -> ModelPipelineArtifacts:
-    name = model_name.lower().strip()
-    if name not in REGRESSION_MODELS:
-        raise ValueError("model_name is not a supported regression model")
-
-    estimator = get_regression_estimator(name, random_state=random_state)
-    # Resampling is a classification technique, so it is disabled for regression.
-    return fit_pipeline_with_estimator(
-        df=df,
-        target_column=target_column,
-        model_name=name,
-        estimator=estimator,
-        ordered_categorical_features=ordered_categorical_features,
-        category_orders=category_orders,
-        enable_resampling=False,
-        correlation_threshold=correlation_threshold,
-        random_state=random_state,
-    )
+    best_metrics = metrics.get(best_name, {})
+    return {
+        "best_model_name": best_name,
+        "best_model": best_model,
+        "best_metrics": best_metrics,
+        "metrics": metrics,
+    }
