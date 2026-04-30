@@ -1,4 +1,56 @@
+import { useMemo } from "react";
+import useCountUp from "../hooks/useCountUp";
+
+const parseAnimatedMetric = (value) => {
+    if (typeof value === "number" && Number.isFinite(value)) {
+        return {
+            target: value,
+            decimals: Number.isInteger(value) ? 0 : 2,
+            suffix: "",
+        };
+    }
+
+    if (typeof value !== "string") return null;
+
+    const trimmed = value.trim();
+    const percentMatch = trimmed.match(/^(-?\d+(?:\.\d+)?)%$/);
+    if (percentMatch) {
+        const numeric = Number(percentMatch[1]);
+        if (!Number.isFinite(numeric)) return null;
+        const decimalPart = percentMatch[1].split(".")[1] ?? "";
+        return {
+            target: numeric,
+            decimals: decimalPart.length,
+            suffix: "%",
+        };
+    }
+
+    const numberMatch = trimmed.match(/^(-?\d+(?:\.\d+)?)$/);
+    if (numberMatch) {
+        const numeric = Number(numberMatch[1]);
+        if (!Number.isFinite(numeric)) return null;
+        const decimalPart = numberMatch[1].split(".")[1] ?? "";
+        return {
+            target: numeric,
+            decimals: decimalPart.length,
+            suffix: "",
+        };
+    }
+
+    return null;
+};
+
 export default function BoxData({ icon, title, value, iconStyle = "", className = "", ...props }) {
+    const metricConfig = useMemo(() => parseAnimatedMetric(value), [value]);
+    const animatedValue = useCountUp(metricConfig?.target ?? 0, {
+        duration: 1400,
+        enabled: Boolean(metricConfig),
+    });
+
+    const displayValue = metricConfig
+        ? `${animatedValue.toFixed(metricConfig.decimals)}${metricConfig.suffix}`
+        : value;
+
     return (
         <div
             className={`
@@ -30,7 +82,7 @@ export default function BoxData({ icon, title, value, iconStyle = "", className 
                     {title}
                 </p>
                 <h2 className="text-2xl md:text-3xl font-bold text-text-primary-active-light dark:text-text-primary-active-dark leading-tight tracking-tight truncate">
-                    {value}
+                    {displayValue}
                 </h2>
             </div>
         </div>

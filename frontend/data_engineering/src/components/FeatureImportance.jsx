@@ -1,8 +1,9 @@
 import BaseComponent from "./BaseComponent";
+import useCountUp from "../hooks/useCountUp";
 
 const xAxisTicks = [0, 25, 50, 75, 100];
-const labelWidthClass = "w-[12ch]";
-const labelColumnClass = "grid-cols-[12ch_1fr]";
+const labelWidthClass = "w-[20ch]";
+const labelColumnClass = "grid-cols-[20ch_1fr]";
 
 export default function FeatureImportance() {
     const sortedFeatures = [...featureImportanceData].sort((a, b) => b.importance - a.importance);
@@ -12,21 +13,7 @@ export default function FeatureImportance() {
             <div className="w-full overflow-x-hidden">
                 <div className="pl-4">
                     {sortedFeatures.map((feature, index) => (
-                        <div
-                            key={index}
-                            className="group flex items-center gap-0 py-2 relative before:absolute before:ml-2 before:left-[12ch] before:top-0 before:h-full before:w-px before:bg-gray-300 before:content-[''] hover:bg-gray-100/80 hover:text-blue-600 transition-colors duration-200 rounded-md"
-                        >
-                            <span className={`${labelWidthClass} shrink-0 truncate font-bold text-right mr-2`}>{feature.name}</span>
-                            <div className="flex items-center gap-2 w-full">
-                                <div
-                                    className="group-hover:h-3.5 group-hover:bg-blue-700 transition-all duration-200 h-2.5 rounded-r-full bg-blue-600"
-                                    style={{ width: `${feature.importance * 100}%` }}
-                                />
-                                <span className="text-xs text-gray-600 group-hover:text-blue-700 transition-colors duration-200 group-hover:font-medium">
-                                    {(feature.importance * 100).toFixed(1)}%
-                                </span>
-                            </div>
-                        </div>
+                        <FeatureRow key={index} feature={feature} index={index} />
                     ))}
                 </div>
                 <div className="w-full ml-2">
@@ -50,6 +37,29 @@ export default function FeatureImportance() {
                 </div>
             </div>
         </BaseComponent>
+    );
+}
+
+function FeatureRow({ feature, index }) {
+    const targetPercent = feature.importance * 100;
+    const animatedPercent = useCountUp(targetPercent, {
+        duration: 1200,
+        delay: index * 60,
+    });
+
+    return (
+        <div className="group flex items-center gap-0 py-2 relative before:absolute before:ml-2 before:left-[20ch] before:top-0 before:h-full before:w-px before:bg-gray-300 before:content-[''] hover:bg-gray-100/80 hover:text-blue-600 transition-colors duration-200 rounded-md">
+            <span className={`${labelWidthClass} shrink-0 truncate font-bold text-right mr-2`}>{feature.name}</span>
+            <div className="flex items-center gap-2 w-full">
+                <div
+                    className="group-hover:h-3.5 group-hover:bg-blue-700 transition-[height,background-color] duration-200 h-2.5 rounded-r-full bg-blue-600"
+                    style={{ width: `${animatedPercent}%` }}
+                />
+                <span className="text-xs text-gray-600 group-hover:text-blue-700 transition-colors duration-200 group-hover:font-medium">
+                    {animatedPercent.toFixed(1)}%
+                </span>
+            </div>
+        </div>
     );
 }
 
