@@ -3,55 +3,119 @@ import ClassificationReport from "./ClassificationReport";
 import ConfusionMatrix from "./ConfusionMatrix";
 import FeatureImportance from "./FeatureImportance";
 import ROCChart from "./ROCChart";
+import ScatterPlot from "./ScatterPlot";
 import {
     AngleDownIcon,
     BullseyeIcon,
     CrosshairIcon,
+    DiagramProjectIcon,
     FloppyDiskIcon,
+    LayerGroupIcon,
     LineChartIcon,
     MagnifyingGlassIcon,
+    Minimize2Icon,
+    RulerIcon,
     ScaleBalancedIcon,
+    UsersIcon,
+    WarningIcon,
 } from "./icons";
 
-const statsData = [
-    {
-        id: 1,
-        title: "Accuracy",
-        value: "89.4%",
-        icon: <BullseyeIcon className="w-6 h-6 text-blue-600" />,
-        iconStyle: "bg-blue-100 dark:bg-bg-surface-blue-default-dark",
-    },
-    {
-        id: 2,
-        title: "Precision",
-        value: "88.7%",
-        icon: <CrosshairIcon className="w-6 h-6 text-emerald-600" />,
-        iconStyle: "bg-green-100 dark:bg-bg-surface-green-default-dark",
-    },
-    {
-        id: 3,
-        title: "Recall",
-        value: "87.1%",
-        icon: <MagnifyingGlassIcon className="w-6 h-6 text-amber-600" />,
-        iconStyle: "bg-yellow-100 dark:bg-bg-surface-yellow-default-dark",
-    },
-    {
-        id: 4,
-        title: "F1 Score",
-        value: "87.9%",
-        icon: <ScaleBalancedIcon className="w-6 h-6 text-rose-600" />,
-        iconStyle: "bg-red-100 dark:bg-bg-surface-red-default-dark",
-    },
-    {
-        id: 5,
-        title: "AUC-ROC",
-        value: "0.93",
-        icon: <LineChartIcon className="w-6 h-6 text-purple-600" />,
-        iconStyle: "bg-purple-100 dark:bg-bg-surface-purple-default-dark",
-    },
-];
+const statsData = {
+    "classification": [
+        {
+            id: "accuracy",
+            title: "Accuracy",
+            value: "92.5%",
+            icon: BullseyeIcon,
+            iconStyle: "text-green-500 bg-green-100",
+        },
+        {
+            id: "precision",
+            title: "Precision",
+            value: "89.3%",
+            icon: CrosshairIcon,
+            iconStyle: "text-blue-500 bg-blue-100",
+        },
+        {
+            id: "recall",
+            title: "Recall",
+            value: "94.1%",
+            icon: MagnifyingGlassIcon,
+            iconStyle: "text-yellow-500 bg-yellow-100",
+        },
+        {
+            id: "f1_score",
+            title: "F1 Score",
+            value: "91.6%",
+            icon: ScaleBalancedIcon,
+            iconStyle: "text-purple-500 bg-purple-100",
+        },
+    ],
+    "regression": [
+        {
+            id: "r2_score",
+            title: "R² Score",
+            value: "0.89",
+            icon: BullseyeIcon,
+            iconStyle: "text-green-500 bg-green-100",
+        },
+        {
+            id: "mse",
+            title: "Mean Squared Error",
+            value: "0.025",
+            icon: WarningIcon,
+            iconStyle: "text-red-500 bg-red-100",
+        },
+        {
+            id: "rmse",
+            title: "Root Mean Squared Error",
+            value: "0.158",
+            icon: LineChartIcon,
+            iconStyle: "text-blue-500 bg-blue-100",
+        },
+        {
+            id: "mae",
+            title: "Mean Absolute Error",
+            value: "0.012",
+            icon: RulerIcon,
+            iconStyle: "text-orange-500 bg-orange-100",
+        },
+    ],
+    "clustering": [
+        {
+            id: "silhouette",
+            title: "Silhouette Score",
+            value: "0.65",
+            icon: DiagramProjectIcon,
+            iconStyle: "text-blue-500 bg-blue-100",
+        },
+        {
+            id: "clusters",
+            title: "Number of Clusters",
+            value: "4",
+            icon: LayerGroupIcon,
+            iconStyle: "text-purple-500 bg-purple-100",
+        },
+        {
+            id: "inertia",
+            title: "Inertia (WCSS)",
+            value: "123.4",
+            icon: Minimize2Icon,
+            iconStyle: "text-green-500 bg-green-100",
+        },
+        {
+            id: "avg-size",
+            title: "Avg Cluster Size",
+            value: "250",
+            icon: UsersIcon,
+            iconStyle: "text-indigo-500 bg-indigo-100",
+        }
+    ],
+};
 
-export default function ModelMetricsPage({ onBackToDataset }) {
+export default function ModelMetricsPage({ onBackToDataset, selectedModel }) {
+    const metrics = statsData[selectedModel] ?? [];
+
     return (
         <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between">
@@ -76,8 +140,8 @@ export default function ModelMetricsPage({ onBackToDataset }) {
                 </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8 mt-8">
-                {statsData.map((stat) => (
+            <div className={`mx-auto mb-8 mt-8 grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-7xl`}>
+                {metrics.map((stat) => (
                     <BoxData
                         key={stat.id}
                         title={stat.title}
@@ -89,10 +153,18 @@ export default function ModelMetricsPage({ onBackToDataset }) {
             </div>
 
             <div className="grid gap-6 grid-cols-2">
-                <ConfusionMatrix />
-                <FeatureImportance />
-                <ROCChart />
-                <ClassificationReport />
+                {selectedModel === "classification" ? (
+                    <ConfusionMatrix />
+
+                ) : selectedModel === "regression" ? (
+                    <ROCChart />
+
+                ) : selectedModel === "clustering" ? ( 
+                    <ScatterPlot className="col-span-2" />
+                ) : null}
+
+                {selectedModel === "classification" || selectedModel === "regression" ? <FeatureImportance /> : null}
+                <ClassificationReport className="col-span-2" />
             </div>
         </section>
     );

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { isValidElement, useMemo } from "react";
 import useCountUp from "../hooks/useCountUp";
 
 const parseAnimatedMetric = (value) => {
@@ -47,6 +47,15 @@ export default function BoxData({ icon, title, value, iconStyle = "", className 
         enabled: Boolean(metricConfig),
     });
 
+    const renderedIcon = isValidElement(icon)
+        ? icon
+        : typeof icon === "function"
+            ? (() => {
+                const IconComponent = icon;
+                return <IconComponent size={24} className="h-6 w-6 shrink-0" />;
+            })()
+            : icon;
+
     const displayValue = metricConfig
         ? `${animatedValue.toFixed(metricConfig.decimals)}${metricConfig.suffix}`
         : value;
@@ -74,7 +83,7 @@ export default function BoxData({ icon, title, value, iconStyle = "", className 
                     ${iconStyle}
                 `}
             >
-                {icon}
+                    {renderedIcon}
             </div>
 
             <div className="flex flex-col grow min-w-0">

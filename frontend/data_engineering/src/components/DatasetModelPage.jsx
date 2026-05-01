@@ -20,6 +20,8 @@ export default function DatasetModelPage({
         !selectedModel ||
         (selectedModel === "classification" && !selectedTarget);
 
+    const isViewMetricsDisabled = !fileName || !selectedModel || (selectedModel === "classification" && !selectedTarget) || (selectedModel === "regression" && !selectedTarget);
+
     return (
         <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between">
@@ -29,7 +31,12 @@ export default function DatasetModelPage({
                 </div>
                 <button
                     onClick={onViewModelMetrics}
-                    className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-3 text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-blue-600/30 flex items-center gap-2 shadow-md shadow-blue-600/20 active:scale-95"
+                    disabled={isViewMetricsDisabled}
+                    className={`flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold transition ${
+                        isViewMetricsDisabled
+                            ? "cursor-not-allowed bg-slate-200 text-slate-400 shadow-none"
+                            : "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md shadow-blue-600/20 hover:shadow-lg hover:shadow-blue-600/30 active:scale-95"
+                    }`}
                 >
                     View Model Metrics
                     <AngleDownIcon size={24} className="-rotate-90" />

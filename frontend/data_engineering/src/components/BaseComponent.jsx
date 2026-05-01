@@ -18,7 +18,7 @@ export default function BaseComponent({ title, componentButton, description, chi
             </div>
 
             {children && (
-                <div className="mt-4">
+                <div className="mt-2">
                     {children}
                 </div>
             )}

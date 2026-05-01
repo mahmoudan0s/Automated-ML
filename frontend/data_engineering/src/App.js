@@ -33,7 +33,7 @@ function App() {
       )}
 
       {page === 2 && (
-        <ModelMetricsPage onBackToDataset={() => setPage(1)} />
+        <ModelMetricsPage onBackToDataset={() => setPage(1)} selectedModel={selectedModel} />
       )}
     </main>
   );
